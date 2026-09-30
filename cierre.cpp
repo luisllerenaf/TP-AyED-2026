@@ -20,7 +20,7 @@ struct estadoCierre {
 void nombreArchivoFecha (char nombre[], char fecha[]);
 void avanzarFecha(char fecha[]);
 bool esBisiesto(int anio);
-
+bool esDomingo(char fecha[]);
  
 int main () {}
 
@@ -52,4 +52,18 @@ void avanzarFecha(char fecha[]) {
 
 bool esBisiesto(int anio) {
     return (anio % 4 == 0 && anio % 100 != 0) || (anio % 400 == 0);
+}
+
+bool esDomingo(char fecha[]) {
+    int dia, mes, anio;
+    sscanf(fecha, "%2d-%2d-%4d", &dia, &mes, &anio);
+
+    int a = (14 - mes) / 12;
+    int y = anio - a;
+    int m = mes + 12 * a - 2;
+
+    int diaSemana = (dia + y + y / 4 - y / 100 + y / 400
+                     + (31 * m) / 12) % 7;
+
+    return diaSemana == 0;
 }
