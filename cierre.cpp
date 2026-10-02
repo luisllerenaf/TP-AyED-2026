@@ -22,7 +22,54 @@ void avanzarFecha(char fecha[]);
 bool esBisiesto(int anio);
 bool esDomingo(char fecha[]);
  
-int main () {}
+int main () {
+    estadoCierre estado;
+
+    FILE* fEstado = fopen("estadoCierre.dat", "rb");
+    if (fEstado == NULL) {
+        strcpy(estado.ultimaFecha, "02-06-2025");
+        estado.semana = 1;
+    } else {
+        fread(&estado, sizeof(estadoCierre), 1, fEstado);
+        fclose(fEstado);
+    }
+
+    char fecha[11];
+    strcpy(fecha, estado.ultimaFecha);
+
+    int mesNum, anioNum, diaNum;
+    sscanf(fecha, "%2d-%2d-%4d", &diaNum, &mesNum, &anioNum);
+
+    int diasNulos = 0;
+    int n = 0; 
+
+    Aux aux[7]; 
+
+    while (diasNulos < 3 && n < 7) {
+        char nombre[30];
+        nombreArchivoFecha(nombre, fecha);
+    
+        FILE* f = fopen(nombre, "rb");
+        if (f == NULL) {
+            diasNulos++;
+        } else {
+        aux[n].fIN = f;
+        aux[n].fin = fread(&aux[n].actual, sizeof(Comanda), 1, f) != 1;
+        n++;
+        diasNulos = 0; 
+        }
+
+        if (esDomingo(fecha)) break;
+
+        avanzarFecha(fecha);
+    }
+
+    if (n == 0) {
+        cout << "No se encontraron archivos diarios para esta semana." << endl;
+        return 0;
+    }
+
+}
 
 void nombreArchivoFecha (char nombre[], char fecha[]){
     strcpy(nombre, "comandas_");
