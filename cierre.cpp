@@ -110,6 +110,12 @@ int main () {
 
     fwrite(&nombreResumen, sizeof(char), 26, fNombre);
 
+    FILE* fNombre = fopen("Nombre.dat", "wb");
+    if (fNombre == NULL) {
+    cout << "Error al crear el archivo con el nombre del semanal" << endl;
+    return 0;
+    }
+
     fclose(fNombre);
     
     avanzarFecha(fecha);
