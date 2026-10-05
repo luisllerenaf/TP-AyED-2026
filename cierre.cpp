@@ -69,6 +69,62 @@ int main () {
         return 0;
     }
 
+    char mesStr[3];
+    sprintf(mesStr, "%02d", mesNum);
+
+    string nombreSemanal = "comandas_semana_s" + to_string(estado.semana) + "-" + string(mesStr) + ".dat";
+
+
+    FILE* fOUT = fopen(nombreSemanal.c_str(), "wb");
+    if (fOUT == NULL) {
+    cout << "Error al crear el archivo semanal." << endl;
+    return 0;
+    }
+
+    while (true) {
+        int minIdx = -1;
+        for (int i = 0; i < n; i++) {
+            if (!aux[i].fin) {
+                if (minIdx == -1 || aux[i].actual.idMozo < aux[minIdx].actual.idMozo) {
+                    minIdx = i;
+                }
+            }
+        }
+
+        if (minIdx == -1) {
+            break; 
+        }
+
+        fwrite(&aux[minIdx].actual, sizeof(Comanda), 1, fOUT);
+
+        aux[minIdx].fin = fread(&aux[minIdx].actual, sizeof(Comanda), 1, aux[minIdx].fIN) != 1;
+    }
+
+    for (int i = 0; i < n; i++) {
+    fclose(aux[i].fIN);
+    }
+    fclose(fOUT);
+    
+    char nombreResumen[26];
+    strcpy(nombreResumen, nombreSemanal.c_str());
+
+    fwrite(&nombreResumen, sizeof(char), 26, fNombre);
+
+    fclose(fNombre);
+    
+    avanzarFecha(fecha);
+    strcpy(estado.ultimaFecha, fecha);
+
+    estado.semana++;
+    if (estado.semana > 4) {
+        estado.semana = 1;
+    }
+
+    FILE* fEstadoOut = fopen("estadoCierre.dat", "wb");
+    fwrite(&estado, sizeof(estadoCierre), 1, fEstadoOut);
+    fclose(fEstadoOut);
+
+    return 0;
 }
 
 void nombreArchivoFecha (char nombre[], char fecha[]){
