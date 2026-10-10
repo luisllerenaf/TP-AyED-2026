@@ -12,17 +12,23 @@ struct Comanda {
     float comision;
 };
 
+struct Aux {
+    FILE* fIN;
+    Comanda actual;
+    bool fin;
+};
+
 struct estadoCierre {
     char ultimaFecha[11];
     int semana;
 };
 
 void nombreArchivoFecha (char nombre[], char fecha[]);
-void avanzarFecha(char fecha[]);
 bool esBisiesto(int anio);
+void avanzarFecha(char fecha[]);
 bool esDomingo(char fecha[]);
- 
-int main () {
+
+int main() {
     estadoCierre estado;
 
     FILE* fEstado = fopen("estadoCierre.dat", "rb");
@@ -30,38 +36,45 @@ int main () {
         strcpy(estado.ultimaFecha, "02-06-2025");
         estado.semana = 1;
     } else {
-        fread(&estado, sizeof(estadoCierre), 1, fEstado);
-        fclose(fEstado);
-    }
+        if (fread(&estado, sizeof(estadoCierre), 1, fEstado) != 1) {
+            cout << "Error al leer el estado del cierre." << endl;
+            fclose(fEstado);
+            return 1;
+        }
+    fclose(fEstado);
+   }
 
     char fecha[11];
     strcpy(fecha, estado.ultimaFecha);
 
-    int mesNum, anioNum, diaNum;
-    sscanf(fecha, "%2d-%2d-%4d", &diaNum, &mesNum, &anioNum);
+    int mesNum;
+    sscanf(fecha, "%*d-%d-%*d", &mesNum);
 
-    int diasNulos = 0;
-    int n = 0; 
+    int diasProcesados = 0;
+    int n = 0;
 
-    Aux aux[7]; 
+    Aux aux[7];
 
-    while (diasNulos < 3 && n < 7) {
+    while (diasProcesados < 7) {
         char nombre[30];
         nombreArchivoFecha(nombre, fecha);
-    
+
         FILE* f = fopen(nombre, "rb");
-        if (f == NULL) {
-            diasNulos++;
-        } else {
+
+        if (f != NULL) {
         aux[n].fIN = f;
         aux[n].fin = fread(&aux[n].actual, sizeof(Comanda), 1, f) != 1;
         n++;
-        diasNulos = 0; 
         }
 
-        if (esDomingo(fecha)) break;
+        diasProcesados++;
 
+        bool domingo = esDomingo(fecha);
         avanzarFecha(fecha);
+
+        if (domingo) {
+        break;
+        }
     }
 
     if (n == 0) {
@@ -105,10 +118,9 @@ int main () {
     }
     fclose(fOUT);
     
+    //archivo auxiliar 2
     char nombreResumen[26];
     strcpy(nombreResumen, nombreSemanal.c_str());
-
-    fwrite(&nombreResumen, sizeof(char), 26, fNombre);
 
     FILE* fNombre = fopen("Nombre.dat", "wb");
     if (fNombre == NULL) {
@@ -116,9 +128,11 @@ int main () {
     return 0;
     }
 
+    fwrite(&nombreResumen, sizeof(char), 26, fNombre);
+
     fclose(fNombre);
-    
-    avanzarFecha(fecha);
+    //archivo auxiliar 2
+
     strcpy(estado.ultimaFecha, fecha);
 
     estado.semana++;
@@ -127,7 +141,18 @@ int main () {
     }
 
     FILE* fEstadoOut = fopen("estadoCierre.dat", "wb");
-    fwrite(&estado, sizeof(estadoCierre), 1, fEstadoOut);
+
+    if (fEstadoOut == NULL) {
+        cout << "Error al guardar el estado del cierre." << endl;
+        return 0;
+    }
+
+    if (fwrite(&estado, sizeof(estadoCierre), 1, fEstadoOut) != 1) {
+        cout << "Error al escribir el estado del cierre." << endl;
+        fclose(fEstadoOut);
+        return 0;
+    }
+
     fclose(fEstadoOut);
 
     return 0;
@@ -137,6 +162,10 @@ void nombreArchivoFecha (char nombre[], char fecha[]){
     strcpy(nombre, "comandas_");
     strcat(nombre, fecha);
     strcat(nombre, ".dat");
+}
+
+bool esBisiesto(int anio) {
+    return (anio % 4 == 0 && anio % 100 != 0) || (anio % 400 == 0);
 }
 
 void avanzarFecha(char fecha[]) {
@@ -157,10 +186,6 @@ void avanzarFecha(char fecha[]) {
     }
 
     sprintf(fecha, "%02d-%02d-%04d", dia, mes, anio);
-}
-
-bool esBisiesto(int anio) {
-    return (anio % 4 == 0 && anio % 100 != 0) || (anio % 400 == 0);
 }
 
 bool esDomingo(char fecha[]) {
