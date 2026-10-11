@@ -29,29 +29,33 @@ const float TASA_COMISION = 0.10f;
 void obtenerUltimaFecha(char f[]);
 string fechaString(const char fecha[]);
 bool validarFecha(char fecha[], char ultimaFecha[]);
+int entradaDeFecha(char fechaActual[], char ultimaFecha[]);
+int mozosArray(const char* nombre, Mozo arrayMozos[], int &lenM);
 
 int main() {
 
     char fechaActual[11];
     char ultimaFecha[11];
 
-    cout<<"=== SISTEMAS DE VENTAS - BUFFET ALBERT EINSTEIN ==="<<endl;
+    cout<<"=== SISTEMAS DE VENTAS - BUFFET ALBERT EINSTEIN ===\n"<<endl;
 
     //Carga de la fecha actual y validacion de la misma
 
-    do{
-        cout<<"Formato de Fecha: DD MM AAAA"<<endl;
-        cout<<"(Para salir ingrese '00')"<<endl;
-        cout<<"Fecha actual: "<<endl;
-        cin.getline(fechaActual, 11);
+    if(entradaDeFecha(fechaActual, ultimaFecha) == 1){  //Pido la fecha a procesar, la valido o salgo de programa
 
-        obtenerUltimaFecha(ultimaFecha);    //Obtiene la ultima fecha procesada
+        return 1;   //Salgo del programa  
+    }
+
+    //Carga de los mozos del archivo "mozos.dat" en un array para poder comparar
+
+    Mozo arrayMozos[100];
+
+    int lenM = 0;
+
+    if(mozosArray("mozos.dat", arrayMozos, lenM) == 1){
         
-        if(!strcmp(fechaActual, "00")){
-            return 0;       //Sale del programa
-        }
-
-    }while(!validarFecha(fechaActual, ultimaFecha));
+        return 1;
+    }
 
     return 0;
 }
@@ -79,21 +83,21 @@ string fechaString(const char fecha[]){
 return anio + mes + dia;
 }
 
-bool validarFecha(char fecha[], char ultimaFecha[]){ //Valida el formato de fecha ingresado (dd mm aaaa)
+bool validarFecha(char fecha[], char ultimaFecha[]){ //Valida que el formato de fecha ingresado y que sea mayor o igual a la ultima fecha procesada
 
     for(int i = 0; i < 10; i++){
 
         if(i == 2 || i ==5){
 
             if(fecha[i] != ' '){
-                cout<<"Error, respete los espacios entre los numeros de la fecha (Ej.: 02 06 2025)"<<endl;
+                cout<<"##Error: Respete los espacios entre los numeros de la fecha (Ej.: 07 06 2025)\n"<<endl;
                 return false;
             }
         }
 
         else if(fecha[i] < '0' || fecha[i] > '9'){
 
-            cout<<"Error, respete el formato de fecha (Ej.: 02 06 2025)"<<endl;
+            cout<<"##Error: Respete el formato de fecha (Ej.: 07 06 2025)\n"<<endl;
             return false;
         }
     }
@@ -107,7 +111,7 @@ bool validarFecha(char fecha[], char ultimaFecha[]){ //Valida el formato de fech
 
     if(dia < 1 || dia > 31 || mes < 1 || mes > 12 || anio > 2035 ){
 
-        cout<<"Error, La fecha Invalida"<<endl;
+        cout<<"###Error: La fecha Invalida\n"<<endl;
         return false;
     }
 
@@ -115,9 +119,44 @@ bool validarFecha(char fecha[], char ultimaFecha[]){ //Valida el formato de fech
 
     if(fechaString(fecha) < fechaString(ultimaFecha)){ //Compara si la fecha ingresada es mayot a la ultima fecha procesada
              
-        cout<<"Error, la fecha tiene que ser mayor a "<<ultimaFecha<<endl;
+        cout<<"###Error: La fecha tiene que ser mayor o igual a "<<ultimaFecha<<"\n"<<endl;
         return false;               
     }
 
     return true;
+}
+
+int entradaDeFecha(char fechaActual[], char ultimaFecha[]){ //Gestiona la carga de la fecha actual y valida que sea mayor a la ultima fecha procesada
+
+    do{
+        cout<<"Ingrese la fecha en Formato: DD MM AAAA"<<endl;
+        cout<<"Para salir ingrese: 00"<<endl;
+        cout<<"Fecha actual: ";
+        cin.getline(fechaActual, 11);
+
+        obtenerUltimaFecha(ultimaFecha);    //Obtiene la ultima fecha procesada
+        
+        if(!strcmp(fechaActual, "00")){
+            return 1;               //Retorna 1 para salir del programa
+        }
+
+    }while(!validarFecha(fechaActual, ultimaFecha));    //valida que la fecha sea mayor o igual a la ultima fecha procesada
+
+    return 0;    //Retorna 0 si la fecha es mayor o igual a la ultima fecha procesada
+}
+
+int mozosArray(const char* nombre, Mozo arrayMozos[], int &lenM){
+
+    FILE* fmozos = fopen(nombre,"rb");
+    if (fmozos == NULL){
+        cout<<"#Error, no se pudo abrir el archivo mozos.dat\n"<<endl;
+        return 1;
+    }
+
+    while(fread(&arrayMozos[lenM], sizeof(Mozo), 1, fmozos) == 1){
+
+        lenM++;
+    }
+    fclose(fmozos);
+    return 0;
 }
