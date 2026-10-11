@@ -25,7 +25,7 @@ int main(){
     recorrerArchivo(semana, mes);
     return 0;
 }
-
+ 
 void recorrerArchivo (const char* semana, const char* mes){
     char nombreArchivo[50];
     sprintf(nombreArchivo, "comandas_semana_%s-%s.dat", semana, mes);
@@ -43,7 +43,7 @@ void recorrerArchivo (const char* semana, const char* mes){
     while(leido == 1){
         int mozoActual = c.idMozo;
         int cantidadTotal = 0;
-        int comisionTotal =  0;
+        float comisionTotal =  0;
 
         while(leido == 1 && c.idMozo == mozoActual){
             cantidadTotal = cantidadTotal + c.cantidad;
