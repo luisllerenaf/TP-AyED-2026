@@ -36,6 +36,8 @@ void ordenarPorFecha(ComandaHistorica C[], int lenCH);
 string fechaString(const char f[]);
 void generarClave(Mozo &m);
 void cargarArrayMozos(ComandaHistorica C[], int lenC, Mozo M[], int &lenM);
+void nombreArchivoFecha(char nombre[], char fecha[]);
+void ordenamientoBurbuja(Comanda d[],int lenD);
 
 int main(){
 
@@ -92,6 +94,14 @@ int main(){
     }
 
     fclose(fmozos);
+
+    //Separo las comandas por dia y las guardo en un archivo
+
+    corteControlComandas(comandas, lenCH, mozos, lenMozos);
+
+    //Actualizamos el inventario
+
+    actualizarTodoInventario(comandas, lenCH);  //Se aprovecha el array de comandas historias ordenadas para actualizar el inventario
 
     return 0;
 }
@@ -159,6 +169,29 @@ void cargarArrayMozos(ComandaHistorica C[], int lenC, Mozo M[], int &lenM){ //Ca
             generarClave(M[lenM]);                  //Genero laclave del mozo
             M[lenM].totalComision = C[i].comision;  //Asigno comision de la comanda historica
             lenM++;
+        }
+    }
+}
+
+void nombreArchivoFecha(char nombre[], char fecha[]){//genera el nombre del archivo en formato comandas_dd-mm-aaaa.dat
+    
+    strcpy(nombre, "comandas_");
+    strcat(nombre, fecha);
+    strcat(nombre, ".dat");
+}
+
+void ordenamientoBurbuja(Comanda d[],int lenD){ //Ordena el array de Comanda[] por el idMozo
+
+    for (int i = 0; i < lenD; i++){
+
+        for (int j = 0; j < lenD -i -1; j++){
+
+            if (d[j].idMozo > d[j + 1].idMozo){
+
+                Comanda temp = d[j];
+                d[j] = d[j + 1];
+                d[j + 1] = temp;
+            }
         }
     }
 }
