@@ -31,6 +31,12 @@ string fechaString(const char fecha[]);
 bool validarFecha(char fecha[], char ultimaFecha[]);
 int entradaDeFecha(char fechaActual[], char ultimaFecha[]);
 int mozosArray(const char* nombre, Mozo arrayMozos[], int &lenM);
+int busquedaBinariaMozo(Mozo vec[], int len, int valor);
+int validarMozo(Mozo M[], int lenM, Mozo mozo);
+int entradaMozo(Mozo arrayMozos[], int lenM, Mozo &mozoActual);
+long busquedaBinariaProducto(const char* nombre, int clave, Producto& r);
+int entradaProducto(const char* nombre, Producto &productoActual);
+int entradaCantidadProducto(Producto productoActual);
 
 int main() {
 
@@ -49,13 +55,54 @@ int main() {
     //Carga de los mozos del archivo "mozos.dat" en un array para poder comparar
 
     Mozo arrayMozos[100];
-
     int lenM = 0;
 
     if(mozosArray("mozos.dat", arrayMozos, lenM) == 1){
         
-        return 1;
+        return 1;   //Salgo del programa
     }
+
+    //===== Carga de la Comanda diaria ===== 
+
+    char seguir[10];
+
+    do{
+        cout<<"\n=== CARGA DE COMANDA ==="<<endl;
+
+        //Ingreso del mozo por idMozo y clave
+
+        Mozo mozoActual;
+        int posMozoActual = entradaMozo(arrayMozos, lenM, mozoActual);  //Pido el mozo a procesar
+        
+        if(posMozoActual == -1){  //Valido la posicion del mozo en el archivo o salgo de programa
+
+            return 1;   //Salgo del programa  
+        }
+
+        //pido el Id del producto de la comanda
+        
+        Producto productoActual;
+        long posProducto = entradaProducto("inventario.dat", productoActual);
+                
+        if( posProducto == -1){
+
+            return 1;   //Salgo del programa
+        }
+
+                //pido la cantidad del producto de la comanda
+
+        int cantidad = entradaCantidadProducto(productoActual);
+
+        if(cantidad == -1){
+
+            return 1;   //Sale del programa
+        }
+
+        cout<<"\nPrecione Enter o cualquier tecla para continuar cargando comandas"<<endl;
+        cout<<"Para salir ingrese '00'"<<endl;
+        cin.getline(seguir, 10);
+
+    }while(strcmp(seguir, "00"));
 
     return 0;
 }
@@ -159,4 +206,195 @@ int mozosArray(const char* nombre, Mozo arrayMozos[], int &lenM){
     }
     fclose(fmozos);
     return 0;
+}
+
+int busquedaBinariaMozo(Mozo vec[], int len, int valor) { //Busca al mozo en el array de Mozos y devuelve la posicion del mozo buscado en el array Mozos
+    
+    int izquierda = 0; // base 0: primer índice válido
+    int derecha = len - 1; // base 0: último índice válido
+
+    while (izquierda <= derecha) {
+        int medio = (izquierda + derecha) / 2;
+ 
+        if (vec[medio].idMozo == valor) {
+ 
+            return medio; // encontrado
+ 
+        } else if (vec[medio].idMozo < valor) {
+ 
+            izquierda = medio + 1; // buscar en la mitad derecha
+ 
+        } else {
+ 
+            derecha = medio - 1; // buscar en la mitad izquierda 
+        } 
+    } 
+    return -1; // no encontrado
+}
+
+int validarMozo(Mozo M[], int lenM, Mozo mozo){ //Devuelve la posicion del mozo buscado en el arrayMozos o -1 si no lo encuentra
+
+    int pos;
+
+    pos = busquedaBinariaMozo(M, lenM, mozo.idMozo);
+
+    if(pos != -1){
+        char aux[20];
+        int i = 0;
+
+        while(mozo.password[i] != '\0' && i < 20 ){    //Sirve para cualquier tamaño de contraseña, hasta 19 caracteres
+
+            aux[i] = mozo.password[i] + 7;
+            i++;
+        }        
+        aux[i] = '\0';
+
+        if(!strcmp(aux, M[pos].password)){
+
+            return pos;
+        }else{
+
+            return -1;
+        }
+    }
+    return -1;
+}
+
+int entradaMozo(Mozo arrayMozos[], int lenM, Mozo &mozoActual){
+    
+    int posMozoActual;
+    char valido[10];
+
+    do{ 
+        cout<<"=== Ingrese datos del Mozo ==="<<endl;
+        cout<<"Para salir ingrese el Id Mozo 00\n"<<endl;
+
+        cout<<"Ingrese Id de Mozo: "<<endl;
+        cin.getline(valido, 10);
+
+        if(!strcmp(valido, "00")){
+
+            return -1;       //Para salir del programa
+        }
+
+        cout<<"Ingrese contraseña: "<<endl;
+        cin.getline(mozoActual.password, 20);           
+            
+        if(strlen(valido) == 4){               
+                
+            mozoActual.idMozo = atoi(valido);
+            posMozoActual = validarMozo(arrayMozos, lenM, mozoActual);  //Valida por idMozo y contraseña            
+            
+            if(posMozoActual == -1){
+
+                cout<<"##Error: Datos incorrectos, vuelva a escribir\n"<<endl;
+            }
+            else{
+
+                mozoActual = arrayMozos[posMozoActual]; //Si encuentra al mozo copia su informacion en mozo actual
+            }
+        }
+        else{
+            cout<<"###Error: Datos incorrectos, vuelva a escribir\n"<<endl;
+            posMozoActual = -1; //Para que vuelva a pedir los datos del mozo
+        }
+
+    }while(posMozoActual == -1);
+
+    return posMozoActual;
+}
+
+long busquedaBinariaProducto(const char* nombre, int clave, Producto& r){ //Busca el producto en el archivo inventario.dat y lo carga en r
+ 
+    FILE* f = fopen(nombre, "rb"); 
+    if (f == NULL) return -1;
+ 
+    fseek(f, 0, SEEK_END);  //al final del archivpara saber cuantos registros hay
+ 
+    long n = ftell(f) / sizeof(Producto); // cantidad de registros
+
+    long pri = 0, ult = n - 1, pos = -1;
+ 
+    while (pri <= ult && pos == -1) {
+ 
+        long med = (pri + ult) / 2;
+ 
+        fseek(f, med * sizeof(Producto), SEEK_SET);
+ 
+        fread(&r, sizeof(Producto), 1, f);
+ 
+        if (r.codigo == clave) pos = med;
+ 
+        else if (clave > r.codigo) pri = med + 1;
+ 
+        else ult = med - 1; 
+    } 
+    fclose(f);
+ 
+    return pos; //Devuelve la posicion del Producto buscado en el archivo (segun laa estructura Proudcto), sino devuelve -1
+}
+
+int entradaProducto(const char* nombre, Producto &productoActual){
+
+    char valido[10];
+    int id_productoActual;
+    long posProducto;   //variable para guardar la posicion del producto en el archivo inventario.dat
+
+    do{
+        cout<<"\n=== Ingrese datos del Producto ==="<<endl;
+        cout<<"(Para salir ingrese '00')\n"<<endl;
+        cout<<"Ingrese codigo del Producto: ";        
+        cin.getline(valido, 10);
+
+        if(!strcmp(valido, "00")){
+
+            return -1;       //retorna -1 Para salir del programa
+        }
+
+        else if(strlen(valido) == 3){
+                
+            id_productoActual = atoi(valido);
+            posProducto = busquedaBinariaProducto(nombre, id_productoActual,productoActual); //busco el producto  y lo guardo en productoActual            
+                
+            if(posProducto == -1){
+
+                cout<<"##Error:Codigo de producto invalido, vuelva a escribir"<<endl;
+            }
+        }
+        else{
+            cout<<"###Error: Codigo de producto invalido, vuelva a escribir"<<endl;
+            posProducto = -1;
+        }       
+
+    }while(posProducto == -1);
+
+    return posProducto; //Retorna la posicion del producto en el Inventario.dat
+}
+
+int entradaCantidadProducto(Producto productoActual){   //Gestiona que la cantidad ingresada sea mayor a 0 0 -1 si sale del programa
+
+    int cantidad;
+    char valido[10];    
+
+    do{
+        cout<< "\nProducto selecionado: "<<productoActual.descripcion<<endl;
+        cout<<"Para salir ingrese 00"<<endl;
+        cout<<"Ingrese la cantidad: ";
+
+        cin.getline(valido, 10);
+
+        if(!strcmp(valido, "00")){
+            return -1;       //Para salir del programa
+        }
+
+        cantidad = atoi(valido);
+
+        if(cantidad <= 0){
+
+            cout<<"##Error: Cantidad invalida, vuelva a escribir"<<endl;
+        }
+
+    }while(cantidad <= 0);
+    
+    return cantidad;    //Retorna la cantidad ingresada mayor a cero
 }
