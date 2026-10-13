@@ -32,12 +32,15 @@ struct Comanda {
     float comision;
 };
 
-void ordenarPorFecha(ComandaHistorica C[], int lenCH);
 string fechaString(const char f[]);
+void ordenarPorFecha(ComandaHistorica C[], int lenCH);
 void generarClave(Mozo &m);
 void cargarArrayMozos(ComandaHistorica C[], int lenC, Mozo M[], int &lenM);
 void nombreArchivoFecha(char nombre[], char fecha[]);
 void ordenamientoBurbuja(Comanda d[],int lenD);
+void corteControlComandas(ComandaHistorica C[], int lenCH, Mozo M[], int lenM);
+int actualizarInventario(char fecha[]);
+void actualizarTodoInventario(ComandaHistorica C[], int lenC);
 
 int main(){
 
@@ -193,5 +196,129 @@ void ordenamientoBurbuja(Comanda d[],int lenD){ //Ordena el array de Comanda[] p
                 d[j + 1] = temp;
             }
         }
+    }
+}
+void corteControlComandas(ComandaHistorica C[], int lenCH, Mozo M[], int lenM){
+
+    //Separa las comandas por dia, las carga en un archivo con formato comandas_dd-mm-aaaa.dat ordenado por idMozo
+
+    int i = 0;
+
+    while (i < lenCH){
+
+        char fechActual[11]; 
+        char nombreArchivo[30];
+
+        strcpy(fechActual, C[i].fecha);
+        nombreArchivoFecha(nombreArchivo, C[i].fecha);
+
+        FILE* fcomanda = fopen(nombreArchivo,"wb");
+        if(fcomanda == NULL){
+            cout << "Error, no se pudo crear archivo "<< nombreArchivo<<endl;
+            return;
+        }
+
+        Comanda d[100]; //array de Comandas del dia actual
+        int lenD = 0; 
+
+        while (i < lenCH && !strcmp(fechActual, C[i].fecha)){                    
+            
+            for (int j = 0; j < lenM; j++){
+
+                if (!strcmp(C[i].nombreMozo, M[j].nombre)){
+
+                    d[lenD].idMozo = M[j].idMozo;
+                    d[lenD].codigoProducto = C[i].codigoProducto;
+                    d[lenD].cantidad = C[i].cantidad;
+                    d[lenD].comision = C[i].comision;
+                    lenD++;
+                    break;
+                }
+            }                     
+            i++;                        
+        }
+
+        ordenamientoBurbuja(d,lenD); // Ordeno por idMozo el arreglo de Comandas (de la fecha actual)
+
+        for(int h = 0; h < lenD; h++){ //cargo el arreglo de Comandas ordenado en el archivo comandas_dd-mm-aaaa.dat
+
+            fwrite (&d[h], sizeof(Comanda), 1, fcomanda);
+        }
+
+        fclose(fcomanda);
+        
+    }
+
+    //Creo un archivo de control con la fecha del ultimo dia procesado. Este archivo se actualizara en las ventas diarias.
+
+    FILE* fUltimafecha = fopen("ultima_fecha_procesada.dat", "wb");
+
+    if(fUltimafecha == NULL){
+        cout << "Error, no se pudo crear el archivo ultima_fecha_procesada.dat"<<endl;
+        return;
+    }
+    
+    fwrite(C[lenCH - 1].fecha, 11*sizeof(char), 1, fUltimafecha);
+        
+    fclose(fUltimafecha);
+}
+
+int actualizarInventario(char fecha[]){ //Actualiza el inventario
+
+    FILE* fInventario = fopen("inventario.dat","rb+");  //abrimos el archivo inventario.dat en modo lectura y escritura
+    if(fInventario == NULL){
+        cout << "Error, no se pudo abrir el archivo inventario.dat"<<endl;
+        return 1;
+    }
+
+    char nombreArchivo[30];
+    nombreArchivoFecha(nombreArchivo, fecha);
+
+    FILE* fComandaDia = fopen(nombreArchivo,"rb"); //abrimos el archivo comandas_dd-mm-aaaa.dat en modo lectura
+    if(fComandaDia == NULL){
+        cout << "Error, no se pudo abrir el archivo "<< nombreArchivo<<endl;
+        fclose(fInventario);
+        return 1;
+    }
+
+    Comanda dia;
+    Producto prod;
+
+    while (fread(&dia, sizeof(Comanda), 1, fComandaDia) == 1){
+
+        fseek(fInventario, 0, SEEK_SET);           
+        while(fread(&prod, sizeof(Producto), 1, fInventario) == 1){
+
+            if(dia.codigoProducto == prod.codigo){
+
+                prod.stockActual -= dia.cantidad;
+
+                fseek(fInventario, -1*(long)sizeof(Producto), SEEK_CUR);
+                fwrite(&prod, sizeof(Producto), 1, fInventario);
+                break;
+            }
+        }       
+    }
+
+    fclose(fInventario);
+    fclose(fComandaDia);
+    return 0;               //Retorna 0 si se actualizo correctamente el inventario, retorna 1 si hubo algun error
+}
+
+void actualizarTodoInventario(ComandaHistorica C[], int lenC){
+
+    int i = 0;
+    char fActual[11];
+
+    while(i < lenC){
+        
+        strcpy(fActual, C[i].fecha);
+        
+        actualizarInventario(fActual);  //actualiza la fecha actual en el inventario
+
+        while(i < lenC && !strcmp(fActual, C[i].fecha)){    //avanza hasta que cambie la fecha respecto la fecha actual
+
+            i++;
+        }        
     }
 }
