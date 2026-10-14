@@ -63,22 +63,6 @@ int main(){
 
     ordenarPorFecha(comandas,lenCH); //Ordeno el Array de comandas históricas por fecha    
 
-    //Creo un nuevo archivo con Las comandas ordenadas
-
-    FILE* fHistoricaNueva = fopen("comandas_ordenadas.dat","wb"); 
-
-    if(fHistoricaNueva == NULL){
-        cout<<"Error, No se pudo crear el archivo comandas_ordenadas.dat"<<endl;
-        return 1;
-    }
-
-    for(int i = 0; i < lenCH; i++){ //Carga en el muevo archivo
-
-        fwrite(&comandas[i], sizeof(ComandaHistorica), 1,fHistoricaNueva);
-    }
-
-    fclose(fHistoricaNueva);
-
     Mozo mozos[30];     //Array para almacenar los mozos
     int lenMozos = 0;
 
