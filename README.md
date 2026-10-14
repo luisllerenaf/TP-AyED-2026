@@ -4,6 +4,7 @@
 ## Integrantes:
 Luis Angel LLerena Flores - luisllerenaf
 Roberto Lionel Acosta Cerruti - RobertoAcosta06
+Alisson Yesenia Totora Villca - alissontotora
 
 ## Compilación y ejecución de los programas:
 
@@ -54,4 +55,4 @@ Se crea un segundo archivo auxiliar "Nombre.dat", el cual guarda el nombre del a
 Para manejar las fechas, se implementaron funciones auxiliares que permiten generar el nombre de cada archivo, avanzar un día teniendo en cuenta la cantidad de días de cada mes y los años bisiestos, e identificar los domingos.
 
 ### resumen.cpp
-Para el programa resumen.cpp se implementó un sistema que primero abre de forma dinámica el archivo semanal y luego realiza una validación para confirmar que exista y que no este vacío ese archivo. A continuación, mediante el algoritmo de corte de control, se recorre el archivo para agrupar y procesar la cantidad de ventas de cada mozo, su comisión total y al final el total general de productos vendidos del buffet. Todo el resumen de cierre se muestra impreso por pantalla para el cliente.
+Para este programa se implementó un sistema que primero abre de forma dinámica el archivo semanal y luego realiza una validación para confirmar que exista y que no este vacío ese archivo. A continuación, mediante el algoritmo de corte de control, se recorre el archivo para agrupar y procesar la cantidad de ventas de cada mozo, su comisión total y al final el total general de productos vendidos del buffet. Todo el resumen de cierre se muestra impreso por pantalla para el cliente.
