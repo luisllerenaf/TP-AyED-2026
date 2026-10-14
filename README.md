@@ -10,6 +10,8 @@ Alisson Yesenia Totora Villca - alissontotora
 
 Marco Marina Ciganda          - marcomarina
 
+Ivan Carhuamaca - Icarhuamaca
+
 ## Compilación y ejecución de los programas:
 
 Para compilar cada uno de los módulos fuente (.cpp), se debe utilizar el compilador de C++ (g++) aplicando el nivel de optimización –02 y especificando el archivo de salida mediante la bandera -o. Para ello, se deben ejecutar los siguientes comandos en la terminal:
