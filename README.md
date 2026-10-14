@@ -3,7 +3,9 @@
 ## Grupo Nro. 20
 ## Integrantes:
 Luis Angel LLerena Flores - luisllerenaf
+
 Roberto Lionel Acosta Cerruti - RobertoAcosta06
+
 Alisson Yesenia Totora Villca - alissontotora
 
 ## Compilación y ejecución de los programas:
