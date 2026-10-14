@@ -3,8 +3,12 @@
 ## Grupo Nro. 20
 ## Integrantes:
 Luis Angel LLerena Flores - luisllerenaf
+
 Roberto Lionel Acosta Cerruti - RobertoAcosta06
+
 Alisson Yesenia Totora Villca - alissontotora
+
+Marco Marina Ciganda          - marcomarina
 
 ## Compilación y ejecución de los programas:
 
