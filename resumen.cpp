@@ -16,7 +16,7 @@ int main(){
     char semana[10];
     char mes[10];
 
-    cout<<"----------SISTEMA DE RESUMEN DE CIERRE----------"<<endl;
+    cout<<"----------SISTEMA DE RESUMEN----------"<<endl;
     cout<<"Ingrese la semana que quiera revisar (ej: s1,s2...)"<<endl;
     cin>> semana;
     cout<<"Ingrese el mes (ej: 01, 05, 11,...)"<<endl;
@@ -48,7 +48,8 @@ void recorrerArchivo (const char* semana, const char* mes){
         return;
     }
 
-    cout<<"RESUMEN DE CIERRE DE SEMANA "<<semana<<", MES "<<mes;
+    cout<<"\nRESUMEN DE CIERRE DE SEMANA "<<semana<<", MES "<<mes<<endl;
+    cout<<"-------------------------------------------"<<endl;
 
     while(leido == 1){
         int mozoActual = c.idMozo;
@@ -66,7 +67,8 @@ void recorrerArchivo (const char* semana, const char* mes){
         cout<<"Comision total a pagar: $"<< comisionTotal<<endl;
         cout<<"-------------------------------------------"<< endl;
     }
-
+    
+    cout<<"-------------------------------------------"<<endl;
     cout<<"Total de productos vendidos del Buffet: "<< totalProdVendidos<<endl;
 
     fclose(f);
