@@ -88,67 +88,77 @@ int main() {
             return 1;   //Salgo del programa  
         }
 
-        //pido el Id del producto de la comanda
-        
-        Producto productoActual;
-        long posProducto = entradaProducto("inventario.dat", productoActual);
-                
-        if( posProducto == -1){
-
-            return 1;   //Salgo del programa
-        }
-
-        //pido la cantidad del producto de la comanda
-
-        int cantidad = entradaCantidadProducto(productoActual);
-
-        if(cantidad == -1){
-
-            return 1;   //Sale del programa
-        }
-
-        //actualizo el stock del productor actual
-
-        productoActual.stockActual = productoActual.stockActual - cantidad; 
-
-        //Actualizo el stock en el archivo inventario.dat
-
-        if(!actualizarStock("inventario.dat", posProducto, productoActual)){ 
-        
-            cout<<"##Error, No se pudo actualizar el inventario"<<endl;
-
-            return 1;
-        }
-
-        //Actualizar comision Total del mozo actual
-
-        mozoActual.totalComision = mozoActual.totalComision + (cantidad * productoActual.precio) * TASA_COMISION; //comision total del mozo
-
-        if(!actualizarComisionMozo("mozos.dat", posMozoActual, mozoActual)){ //Actualizo en el archivo mozos.dat
-
-            cout<<"Error, No se pudo actualizar la comision del mozo"<<endl;
-            return 1;
-        }
-
-        //Genero la comanda diaria
-
-        Comanda comandaActual;
-
-        comandaActual.idMozo = mozoActual.idMozo;
-        comandaActual.codigoProducto = productoActual.codigo;
-        comandaActual.cantidad = cantidad;
-        comandaActual.comision = cantidad * productoActual.precio * TASA_COMISION;  //comision en la comanda actual
-
-        //Creo o abro el archivo de comanda del dia actual
-
-        nombreArchivoFecha(nombreArchivo,fechaActual); //array de char en formato del archivo comanda diaria (comandas_DD-MM-AAAA.dat)
-    
-        if(agregarComanda(nombreArchivo, comandaActual) == 1){
+        do{
+            //pido el Codigo del producto de la comanda
             
-            return 1; //sale del programa si no puede agregar la comanda
-        }   
+            Producto productoActual;
+            long posProducto = entradaProducto("inventario.dat", productoActual);
+                    
+            if( posProducto == -1){
 
-        cout<<"\nPrecione Enter o cualquier tecla para continuar cargando comandas"<<endl;
+                return 1;   //Salgo del programa
+            }
+
+            //pido la cantidad del producto de la comanda
+
+            int cantidad = entradaCantidadProducto(productoActual);
+
+            if(cantidad == -1){
+
+                return 1;   //Sale del programa
+            }
+
+            //actualizo el stock del productor actual
+
+            productoActual.stockActual = productoActual.stockActual - cantidad; 
+
+            //Actualizo el stock en el archivo inventario.dat
+
+            if(!actualizarStock("inventario.dat", posProducto, productoActual)){ 
+            
+                cout<<"##Error, No se pudo actualizar el inventario"<<endl;
+
+                return 1;
+            }
+
+            //Actualizar comision Total del mozo actual
+
+            mozoActual.totalComision = mozoActual.totalComision + (cantidad * productoActual.precio) * TASA_COMISION; //comision total del mozo
+
+            if(!actualizarComisionMozo("mozos.dat", posMozoActual, mozoActual)){ //Actualizo en el archivo mozos.dat
+
+                cout<<"Error, No se pudo actualizar la comision del mozo"<<endl;
+                return 1;
+            }
+
+            //Genero la comanda diaria
+
+            Comanda comandaActual;
+
+            comandaActual.idMozo = mozoActual.idMozo;
+            comandaActual.codigoProducto = productoActual.codigo;
+            comandaActual.cantidad = cantidad;
+            comandaActual.comision = cantidad * productoActual.precio * TASA_COMISION;  //comision en la comanda actual
+
+            //Creo o abro el archivo de comanda del dia actual
+
+            nombreArchivoFecha(nombreArchivo,fechaActual); //array de char en formato del archivo comanda diaria (comandas_DD-MM-AAAA.dat)
+        
+            if(agregarComanda(nombreArchivo, comandaActual) == 1){
+                
+                return 1; //sale del programa si no puede agregar la comanda
+            }   
+
+            cout<<"\nPresione Enter o cualquier tecla para cargar otro producto al ID "<<mozoActual.idMozo<<endl;
+            cout<<"Para salir ingrese '00'"<<endl;
+            cin.getline(seguir, 10);
+        
+        }while(strcmp(seguir, "00"));
+
+        cout<<"Carga completada____100%"<<endl;
+
+        cout<<"\n=== Nueva Carga ==="<<endl;
+        cout<<"Presione Enter o cualquier tecla para iniciar una nueva comanda"<<endl;
         cout<<"Para salir ingrese '00'"<<endl;
         cin.getline(seguir, 10);
 
