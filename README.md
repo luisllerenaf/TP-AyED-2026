@@ -3,6 +3,7 @@
 ## Grupo Nro. 20
 ## Integrantes:
 Luis Angel LLerena Flores - luisllerenaf
+Roberto Lionel Acosta Cerruti - RobertoAcosta06
 
 ## Compilación y ejecución de los programas:
 
