@@ -25,7 +25,6 @@ struct Comanda {
 };
 
 const float TASA_COMISION = 0.10f;
-const int MAX_COMANDAS = 1000;
 
 void obtenerUltimaFecha(char f[]);
 string fechaString(const char fecha[]);
@@ -41,9 +40,7 @@ int entradaCantidadProducto(Producto productoActual);
 bool actualizarStock(const char* nombre, long pos, const Producto &p);
 bool actualizarComisionMozo(const char* nombre, int pos, const Mozo &m);
 void nombreArchivoFecha(char nombre[], char fecha[]);
-int agregarComanda(const char* nombreArchivo, Comanda comandaActual);
-void ordenamientoBurbujaComandas(Comanda d[],int lenD);
-int ordenarArchivoComandas(const char* nombreArchivo);
+int insertarComandaOrdenada(const char* nombreArchivo, Comanda comandaActual);
 int actualizarFechaProcesada(const char* fechaActual);
 
 int main() {
@@ -144,7 +141,7 @@ int main() {
 
             nombreArchivoFecha(nombreArchivo,fechaActual); //array de char en formato del archivo comanda diaria (comandas_DD-MM-AAAA.dat)
         
-            if(agregarComanda(nombreArchivo, comandaActual) == 1){
+            if(insertarComandaOrdenada(nombreArchivo, comandaActual) == 1){
                 
                 return 1; //sale del programa si no puede agregar la comanda
             }   
@@ -163,13 +160,6 @@ int main() {
         cin.getline(seguir, 10);
 
     }while(strcmp(seguir, "00"));   //Si escribe 00 termina la carga de las comandas recien cargadas
-
-    //Ordeno las Comandas del archivo comandas_dd-mm-aaaa.dat recien creado
-
-    if(ordenarArchivoComandas(nombreArchivo) == 1){
-
-        return 1;   //Sale del programa
-    }
 
     //Se actualiza la ultima fecha procesada recientemente
 
@@ -513,63 +503,60 @@ void nombreArchivoFecha(char nombre[], char fecha[]){//genera el nombre del arch
     strcat(nombre, ".dat");
 }
 
-int agregarComanda(const char* nombreArchivo, Comanda comandaActual){
-
-    FILE* fComanda = fopen(nombreArchivo, "ab"); //ab para que escriba al final si existe, sino lo crea
-    if(fComanda == NULL){
-
-        cout<<"#Error: no se pudo abrir el archivo: "<<nombreArchivo<<endl;
-        return 1;
-    }
-    fwrite(&comandaActual, sizeof(Comanda), 1, fComanda); // escribo al final si existe
-    fclose(fComanda);
-
-    return 0;   //Retorna 0 si se pudo crear o abrir el archivo y modificarlo
-}
-
-void ordenamientoBurbujaComandas(Comanda d[],int lenD){ //Ordena el array de comanas[] por el idMozo
-
-    for (int i = 0; i < lenD; i++){
-
-        for (int j = 0; j < lenD -i -1; j++){
-
-            if (d[j].idMozo > d[j + 1].idMozo){
-
-                Comanda temp = d[j];
-                d[j] = d[j + 1];
-                d[j + 1] = temp;
-            }
-        }
-    }
-}
-
-int ordenarArchivoComandas(const char* nombreArchivo){
-
-    Comanda d[MAX_COMANDAS];
-    int lenD = 0;
+int insertarComandaOrdenada(const char* nombreArchivo, Comanda comandaActual){
 
     FILE* fComanda = fopen(nombreArchivo, "rb+");
-    if(fComanda == NULL){
+    if(fComanda == NULL){   //Primera Comanda del dia, no existe el archivo, lo crea
 
-        cout<<"#Error: no se pudo abrir el archivo: "<<nombreArchivo<<endl;
-        return 1;
+        fComanda = fopen(nombreArchivo, "wb");
+        if(fComanda == NULL){
+
+            cout<<"#Error: no se pudo crear el archivo: "<<nombreArchivo<<endl;
+            return 1;
+        }
+        else{
+
+            fwrite(&comandaActual, sizeof(Comanda), 1, fComanda); // escribo la primera Comanda del dia
+            fclose(fComanda);
+            return 0;
+        }       
     }
-    
-    while(fread(&d[lenD], sizeof(Comanda), 1, fComanda) == 1){
+    else{
 
-        lenD++;
-    }
+        FILE* fAux = fopen("comanda_auxiliar.dat", "wb+");   //achivo auxiliar para guardar los registros de Comanda que van despues de la insercion
+        Comanda comandaAux; //para leer lo que voy a escribir en el archivo auxiliar
 
-    ordenamientoBurbujaComandas(d, lenD); //Ordeno el array de Comanda Totales
-    fseek(fComanda, 0, SEEK_SET);   //Vuelvo al inicio del archivo para reescribirlo
+        if(fAux == NULL){
+            cout<<"#Error: no se pudo crear el archivo: comanda_auxiliar.dat"<<endl;
+            return 1;
+        }
 
-    for(int i = 0; i < lenD; i++){
+        int indice = 0; //indice del registro a insertar
+        
+        while(fread(&comandaAux,sizeof(Comanda), 1, fComanda)){ //lectura para ubicar el indice donde voy a incertar la nueva comanda
 
-        fwrite(&d[i], sizeof(Comanda), 1, fComanda);
+            if(comandaAux.idMozo > comandaActual.idMozo){   //Comparo idMozo de lo que voy leyendo contra idMozo de la comandaActual            
+                
+                fwrite(&comandaAux,sizeof(Comanda), 1, fAux);   //Escribo el contenido que va despues del registro a insertar en el archivo auxiliar
+            }
+            else{
+                indice++;   //Queda con la posicion de registro a insertar 
+            }
+        }
+
+        fseek(fComanda, indice*sizeof(Comanda), SEEK_SET);  //Me posiciono en el indice
+        fwrite(&comandaActual, sizeof(Comanda), 1, fComanda);   //Escribo en la posicion del indice la comanda nueva
+
+        fseek(fAux, 0, SEEK_SET);   //Me posiciono al inicio del archivo auxiliar
+
+        while(fread(&comandaAux, sizeof(Comanda), 1, fAux)){    //leo del archivo auxiliar los registros que van despues del registro actual
+
+            fwrite(&comandaAux, sizeof(Comanda), 1, fComanda);  //Escribo en el archivo fComandas el contenido que guarde en el archivo auxiliar
+        }        
+        fclose(fAux);
     }
     fclose(fComanda);
-
-    return 0;   //Retorna 0 si pudo ordenar
+    return 0;   //retorna 0 si pudo Insertar Ordenada la nueva comanda
 }
 
 int actualizarFechaProcesada(const char* fechaActual){
