@@ -47,8 +47,7 @@ int main() {
     char fecha[11];
     strcpy(fecha, estado.ultimaFecha);
 
-    int mesNum;
-    sscanf(fecha, "%*d-%d-%*d", &mesNum);
+    int mesNum = (fecha[3] - '0') * 10 + (fecha[4] - '0');
 
     int diasProcesados = 0;
     int n = 0;
@@ -118,7 +117,6 @@ int main() {
     }
     fclose(fOUT);
     
-    //archivo auxiliar 2
     char nombreResumen[26];
     strcpy(nombreResumen, nombreSemanal.c_str());
 
@@ -131,7 +129,6 @@ int main() {
     fwrite(&nombreResumen, sizeof(char), 26, fNombre);
 
     fclose(fNombre);
-    //archivo auxiliar 2
 
     strcpy(estado.ultimaFecha, fecha);
 
@@ -169,16 +166,28 @@ bool esBisiesto(int anio) {
 }
 
 void avanzarFecha(char fecha[]) {
-    int dia, mes, anio;
-    sscanf(fecha, "%2d-%2d-%4d", &dia, &mes, &anio);
+    int dia = (fecha[0] - '0') * 10
+            + (fecha[1] - '0');
 
-    int diasMes[] = {31, esBisiesto(anio) ? 29 : 28, 31, 30, 31, 30,
-                     31, 31, 30, 31, 30, 31};
+    int mes = (fecha[3] - '0') * 10
+            + (fecha[4] - '0');
+
+    int anio = (fecha[6] - '0') * 1000
+             + (fecha[7] - '0') * 100
+             + (fecha[8] - '0') * 10
+             + (fecha[9] - '0');
+
+    int diasMes[] = {
+        31, esBisiesto(anio) ? 29 : 28, 31, 30,
+        31, 30, 31, 31, 30, 31, 30, 31
+    };
 
     dia++;
+
     if (dia > diasMes[mes - 1]) {
         dia = 1;
         mes++;
+
         if (mes > 12) {
             mes = 1;
             anio++;
@@ -189,15 +198,23 @@ void avanzarFecha(char fecha[]) {
 }
 
 bool esDomingo(char fecha[]) {
-    int dia, mes, anio;
-    sscanf(fecha, "%2d-%2d-%4d", &dia, &mes, &anio);
+    int dia = (fecha[0] - '0') * 10
+            + (fecha[1] - '0');
+
+    int mes = (fecha[3] - '0') * 10
+            + (fecha[4] - '0');
+
+    int anio = (fecha[6] - '0') * 1000
+             + (fecha[7] - '0') * 100
+             + (fecha[8] - '0') * 10
+             + (fecha[9] - '0');
 
     int a = (14 - mes) / 12;
     int y = anio - a;
     int m = mes + 12 * a - 2;
 
-    int diaSemana = (dia + y + y / 4 - y / 100 + y / 400
-                     + (31 * m) / 12) % 7;
+    int diaSemana = (dia + y + y / 4 - y / 100
+                     + y / 400 + (31 * m) / 12) % 7;
 
     return diaSemana == 0;
 }
